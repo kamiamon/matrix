@@ -16,15 +16,15 @@ locals {
     }
     node2 = {
       name       = "2"
-      datacenter = "hel1-dc2"
+      datacenter = "nbg1-dc3"
     }
     node3 = {
       name       = "3"
-      datacenter = "fsn1-dc14"
+      datacenter = "nbg1-dc3"
     }
     node4 = {
       name       = "4"
-      datacenter = "fsn1-dc14"
+      datacenter = "nbg1-dc3"
     }
 
   }
@@ -49,7 +49,11 @@ resource "hcloud_server" "master" {
     "node-role.kubernetes.io/master" = "true"
   }
 
-  ssh_keys = ["mav000"]
+  user_data = templatefile("template/userdata.yaml", {
+    name = each.value.name
+  })
+
+  ssh_keys = ["ATPstealer"]
 }
 
 resource "hcloud_server" "worker" {
@@ -70,5 +74,9 @@ resource "hcloud_server" "worker" {
     "node-role.kubernetes.io/worker" = "true"
   }
 
-  ssh_keys = ["mav000"]
+  user_data = templatefile("template/userdata.yaml", {
+    name = each.value.name
+  })
+
+  ssh_keys = ["ATPstealer"]
 }

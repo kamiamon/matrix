@@ -1,3 +1,5 @@
+### [YouTube instruction rus](https://www.youtube.com/watch?v=B9mdoVmsy6U)
+
 ## [K8s install](https://psj.codes/creating-a-kubernetes-cluster-with-kubeadm-and-containerd-a-comprehensive-step-by-step-guide)
 
 1) Terraform apply
@@ -8,7 +10,10 @@
     kubeadm init --control-plane-endpoint "k8s-best.atpstealer.com:6443" --upload-certs --pod-network-cidr=10.244.0.0/16
     kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
     ```
-4) Connect other nodes
+4) Connect other nodes and label worker with role:
+   ```aiignore
+   kubectl label nodes worker-1 role=worker
+   ```
 5) [Metallb](https://metallb.universe.tf/configuration/_advanced_ipaddresspool_configuration/)
     ```
     helm repo add metallb https://metallb.github.io/metallb

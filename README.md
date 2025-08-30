@@ -62,6 +62,7 @@
 * Добавьте домен
 * Скопируйте открытый и закрытый ключи и добавьте в /var/synapse/data/homeserver.yaml
 ```
+  enable_registration: true
   enable_registration_captcha: true
   recaptcha_public_key: YOUR_SITE_KEY
   recaptcha_private_key: YOUR_SECRET_KEY

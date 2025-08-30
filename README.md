@@ -1,79 +1,68 @@
-## Deploy for Ubuntu 22/24
+## Развертывание для Ubuntu 22/24
 
-### YouTube instruction rus
-[part 1](https://www.youtube.com/watch?v=tuhoUhtuwy8)   
-[part 2](https://www.youtube.com/watch?v=o8MmU6NSq_Y)
-
-### Preparation
-* Create A and AAAA records for server domain name. I use test.aptmatrix.com
-* Install [docker](https://docs.docker.com/engine/install/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/linux/)
-* Create certs
+### Подготовка
+* Создайте записи A и AAAA для доменного имени сервера
+* Установите [docker](https://docs.docker.com/engine/install/ubuntu/) и [docker-compose](https://docs.docker.com/compose/install/linux/)
+* Создайте сертификаты
   ```
   sudo apt install certbot -y
-  certbot certonly --rsa-key-size 2048 --standalone --agree-tos --no-eff-email --email email@email.com -d atpmatrix.com
+  certbot certonly --rsa-key-size 2048 --standalone --agree-tos --no-eff-email --email email@email.com -d EXAMPLE.ORG
   ```
   
 ### Synapse server install
-* Create dir /etc/synapse
-* Copy from docker-compose.yml service synapse and network. Remove any dependencies for now
-* Generate config like [here](https://github.com/matrix-org/synapse/tree/develop/contrib/docker)
+* Создайте каталог /etc/synapse
+* Скопируйте из репозитория файл docker-compose.yml
+* Сгенерируйте конфигурацию как [здесь](https://github.com/matrix-org/synapse/tree/develop/contrib/docker)
   ```angular2html
-  /etc/synapse# docker compose run --rm -e SYNAPSE_SERVER_NAME=test.atpmatrix.com -e SYNAPSE_REPORT_STATS=yes synapse generate
+  /etc/synapse# docker compose run --rm -e SYNAPSE_SERVER_NAME=EXAMPLE.ORG -e SYNAPSE_REPORT_STATS=yes synapse generate
   ```
-  It should be generated at /var/synapse/data/homeserver.yaml
-* Try to run server 
-  ```
-  /etc/synapse# docker compose up
-  ```
-  Check that it works on 8008 port http://test.atpmatrix.com:8008/_matrix/static/ and stop server.
+  Конфигурация должна быть сгенерирована в /var/synapse/data/homeserver.yaml
 
-### Nginx install
-* Create dir /etc/nginx/docker-config and copy there nginx config atpmatrix.com.conf with only one location ~ ^(/_matrix|/_synapse/client|/_synapse/admin)
-* Change server_name and cert paths in config 
-* Copy nginx service from example without unnecessary dependency
-* Run server again and check HTTPS & HTTP via nginx https://test.atpmatrix.com/_matrix/static/
+### Настройка Postgres
+* Измените секцию database в /var/synapse/data/homeserver.yaml как в примере
+  ```
+  database:
+  name: psycopg2
+  args:
+    user: synapse
+    password: pass
+    dbname: synapse
+    host: db
+    cp_min: 5
+    cp_max: 10
+  ```
+* Имените пароль от пользователя базы данных в docker-compose.yml и homeserver.yaml
+  
+### Добавление TURN-сервера
+* Скопируйте директивы turn_ из примера homeserver.yaml
+  ```
+  turn_uris: ["turn:EXAMPLE.ORG:3478?transport=udp", "turn:EXAMPLE.ORG:3478?transport=tcp"]
+  turn_shared_secret: "SECRET"
+  turn_user_lifetime: 86400000  # 24 hours
+  turn_allow_guests: True
+  ```
 
-### Create Admin user
-* Enter to docker container with synapse server and use [register_new_matrix_user](https://manpages.debian.org/testing/matrix-synapse/register_new_matrix_user.1.en.html)
+### Установка Nginx
+* Создайте каталог /etc/nginx/docker-config и скопируйте туда конфиг nginx EXAMPLE.ORG.conf
+* Измените server_name и пути к сертификатам в конфигурации
+* Запустите сервер и проверьте HTTPS через nginx https://EXAMPLE.ORG/_matrix/static/
+
+### Создание пользователя-администратора
+* Зайдите в Docker-контейнер с сервером synapse и используйте [register_new_matrix_user](https://manpages.debian.org/testing/matrix-synapse/register_new_matrix_user.1.en.html)
   ```angular2html
-  docker exec -it  synapse-synapse-1 bash
+  docker exec -it synapse_synapse_1 bash
   register_new_matrix_user -u admin -p admin -a -c /data/homeserver.yaml
   ```
+* По адресу https://EXAMPLE.ORG/admin-url/ будет досупна панель управления synapse
 
-### Systemd unit install
-* Stop docker compose
-  ```angular2html
-  /etc/synapse# docker compose down
-  ```
-* Copy systemd unit file synapse.service in /etc/systemd/system
-* Run
-  ```
-  systemctl daemon-reload && systemctl enable synapse && systemctl start synapse
-  ```
-  
-### Configure Postgres
-* Copy db service part in docker-compose file, change password and enable depend_on db on synapse service.
-* Change database part in homeserver.yaml like in example
-* Restart server: systemctl start synapse
-* Now you have a new database and can remove SQLite file: 
-  ```angular2html
-  /var/synapse/data# rm homeserver.db
-  ```
-
-### Configure admin
-* Copy synapse-admin service to docker-compose file
-* Add to nginx config part with location ~ ^/admin-url(/?)(.*)$
-* Restart service
-* Check https://test.atpmatrix.com/admin-url/#/login
-
-### Add turn server
-* Copy turn service to docker-compose file
-* Copy turn_ directives from homeserver.yaml example
-* Restart service
-* Check audio/video calls in client
-
-### Install browser client
-* Copy element-web service to docker-compose file
-* Add to nginx config part with location ~ ^/web(/?)(.*)$ 
-* Restart service
-* Check https://test.atpmatrix.com/web/
+## Дополнительно
+### Добавление reCAPTCHA
+* Создайте новый сайт на https://www.google.com/recaptcha/admin/create
+* Выберите тип reCAPTCHA v2 "Я не робот"
+* Добавьте домен
+* Скопируйте открытый и закрытый ключи и добавьте в /var/synapse/data/homeserver.yaml
+```
+  enable_registration_captcha: true
+  recaptcha_public_key: YOUR_SITE_KEY
+  recaptcha_private_key: YOUR_SECRET_KEY
+```

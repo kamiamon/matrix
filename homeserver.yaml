@@ -9,8 +9,8 @@
 # For more information on how to configure Synapse, including a complete accounting of
 # each option, go to docs/usage/configuration/config_documentation.md or
 # https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html
-server_name: "atpmatrix.com"
-public_baseurl: "https://atpmatrix.com/"
+server_name: "EXAMPLE.ORG"
+public_baseurl: "https://EXAMPLE.ORG/"
 pid_file: /data/homeserver.pid
 listeners:
   - port: 8008
@@ -24,7 +24,7 @@ database:
   name: psycopg2
   args:
     user: synapse
-    password: passwd
+    password: pass
     dbname: synapse
     host: db
     cp_min: 5
@@ -33,7 +33,7 @@ database:
 #  name: sqlite3
 #  args:
 #    database: /data/homeserver.db
-log_config: "/data/atpmatrix.com.log.config"
+log_config: "/data/EXAMPLE.ORG.log.config"
 media_store_path: /data/media_store
 registration_shared_secret: ""
 report_stats: true
@@ -43,16 +43,15 @@ signing_key_path: ""
 trusted_key_servers:
   - server_name: "matrix.org"
 
+
+##################################
 enable_registration: true
 enable_registration_captcha: true
 recaptcha_public_key: ""
 recaptcha_private_key: ""
 
-auto_join_rooms:
-  - "#newreg:atpmatrix.com"
-
-turn_uris: ["turn:atpmatrix.com:3478?transport=udp", "turn:atpmatrix.com:3478?transport=tcp"]
+##########################################################################################
+turn_uris: ["turn:EXAMPLE.ORG:3478?transport=udp", "turn:EXAMPLE.ORG:3478?transport=tcp"]
 turn_shared_secret: "TURNSERVER_STATIC_AUTH_SECRET"
 turn_user_lifetime: 86400000  # 24 hours
 turn_allow_guests: True
-# turn_restricted_to_local_network: True

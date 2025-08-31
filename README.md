@@ -22,14 +22,14 @@
 * Измените секцию database в /var/synapse/data/homeserver.yaml как в примере
   ```
   database:
-  name: psycopg2
-  args:
-    user: synapse
-    password: pass
-    dbname: synapse
-    host: db
-    cp_min: 5
-    cp_max: 10
+    name: psycopg2
+    args:
+      user: synapse
+      password: pass
+      dbname: synapse
+      host: db
+      cp_min: 5
+      cp_max: 10
   ```
 * Имените пароль от пользователя базы данных в docker-compose.yml и homeserver.yaml
   
